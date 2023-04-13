@@ -5,3 +5,5 @@ To run the code open a CMD prompt in the folder and run these lines
  make
  minesweeper.exe
  ```
+
+Or you can use the .exe if you're running on Windows 11
