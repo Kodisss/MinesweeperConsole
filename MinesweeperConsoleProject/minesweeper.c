@@ -113,10 +113,10 @@ bool is_valid_cell(int row, int col) {
     return row >= 0 && row < rows && col >= 0 && col < cols; // check for validity
 }
 
-// setup the mines dependant on probability
+// setup the mines dependant on probability and first guess
 void place_mines(int inputRow, int inputCol) {
     int num_cells = rows * cols;
-    bool testAroundFirstTry;
+    bool testAroundFirstTry; // bool to test if the mine tries to place itself around the first guess
     num_mines = num_cells * MINE_PROBABILITY;
 
     if(num_mines == 0) num_mines = 1;
@@ -124,7 +124,7 @@ void place_mines(int inputRow, int inputCol) {
     for (int i = 0; i < num_mines; i++) {
         int row, col;
 
-        // try to place a mine until you manage to pick a spot where there is no mine
+        // try to place a mine until you manage to pick a spot where there is no mine and isn't around the first guess
         do {
             row = rand() % rows;
             col = rand() % cols;
