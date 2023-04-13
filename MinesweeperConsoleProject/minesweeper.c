@@ -13,7 +13,7 @@ typedef struct {
     int adjacent_mines;
     bool has_mine;
     bool revealed;
-    bool marked;
+    bool flagged;
 } Cell;
 
 Cell board[MAX_ROWS][MAX_COLS];
@@ -28,13 +28,14 @@ void initialize_board() {
             board[i][j].adjacent_mines = 0;
             board[i][j].has_mine = false;
             board[i][j].revealed = false;
-            board[i][j].marked = false;
+            board[i][j].flagged = false;
         }
     }
 }
 
 // display the board if under 10 adds a space for format
 void print_board() {
+    // print collumn numbers
     printf("\n     ");
     for (int i = 0; i < cols; i++) {
         if (i < 10) {
@@ -43,6 +44,7 @@ void print_board() {
             printf("%d ", i);
         }
     }
+    // print row numbers
     printf("\n\n");
     for (int i = 0; i < rows; i++) {
         if (i < 10) {
@@ -50,21 +52,20 @@ void print_board() {
         } else {
             printf("%d   ", i);
         }
+        // complete the board
         for (int j = 0; j < cols; j++) {
-            if (board[i][j].marked) {
-                printf("M  ");
+            if (board[i][j].flagged) {
+                printf("F  "); // flag it with F if flagged
             } else if (board[i][j].revealed) {
-                printf("%d  ", board[i][j].adjacent_mines);
+                printf("%d  ", board[i][j].adjacent_mines); // if revealed display number
             } else {
-                printf("%c  ", board[i][j].symbol);
+                printf("%c  ", board[i][j].symbol); // otherwise print the symbol for no revealed
             }
         }
         printf("\n");
     }
     printf("\n");
 }
-
-
 
 bool is_valid_cell(int row, int col) {
     return row >= 0 && row < rows && col >= 0 && col < cols; // check for validity
@@ -74,6 +75,8 @@ bool is_valid_cell(int row, int col) {
 void place_mines() {
     int num_cells = rows * cols;
     num_mines = num_cells * MINE_PROBABILITY;
+
+    if(num_mines == 0) num_mines = 1;
 
     for (int i = 0; i < num_mines; i++) {
         int row, col;
@@ -125,39 +128,45 @@ void reveal_cell(int row, int col, int* cellsRemaining) {
     }
 }
 
-void mark_cell(int row, int col, int* mine_count) {
+void flag_cell(int row, int col, int* mine_count) {
     // check for validity
     if (!is_valid_cell(row, col)) {
         return;
     }
 
-    // if not marked and there is a mine, you found a mine
-    if (board[row][col].has_mine && !board[row][col].marked){
+    // if not flagged and there is a mine, you found a mine
+    if (board[row][col].has_mine && !board[row][col].flagged){
         (*mine_count)++;
     }
 
-    // if already marked and there is a mine, you lost a mine
-    if (board[row][col].has_mine && board[row][col].marked){
+    // if already flagged and there is a mine, you lost a mine
+    if (board[row][col].has_mine && board[row][col].flagged){
         (*mine_count)--;
     }
 
-    // mark or unmark the cell
-    board[row][col].marked = !board[row][col].marked;
+    // flag or unflag the cell
+    board[row][col].flagged = !board[row][col].flagged;
 }
 
 int main() {
-    // variables used for the tooltip about wether a cell is already marked or revealed
-    bool markedTooltip = false;
+    // variables used for the tooltip about wether a cell is already flagged or revealed
+    bool flaggedTooltip = false;
     bool revealedTooltip = false;
 
     // reset random
     srand(time(NULL));
 
+    rows = 3; cols = 3; // default board size
+
     // ask for the board size
-    printf("Enter number of rows (maximum %d): ", MAX_ROWS);
-    scanf("%d", &rows);
-    printf("Enter number of columns (maximum %d): ", MAX_COLS);
-    scanf("%d", &cols);
+    do{
+        if(rows * cols < 8) printf("Board too small ! \n");
+        printf("Enter number of rows (maximum %d): ", MAX_ROWS);
+        scanf("%d", &rows);
+        printf("Enter number of columns (maximum %d): ", MAX_COLS);
+        scanf("%d", &cols);
+    }while(rows * cols < 8);
+    
 
     // initialization
     initialize_board();
@@ -174,9 +183,9 @@ int main() {
         char action;
 
         // tooltips gestion
-        if (markedTooltip){
-            printf("This cell is already marked, you can unmark it by selecting M. \n");
-            markedTooltip = false;
+        if (flaggedTooltip){
+            printf("This cell is already flagged, you can unflag it by selecting F. \n");
+            flaggedTooltip = false;
         }
         if (revealedTooltip){
             printf("This cell is already revealed, select another cell. \n");
@@ -184,18 +193,18 @@ int main() {
         }
 
         // prompt to manage player inputs
-        printf("Enter row and column (separated by a space) or 'M' to mark/unmark a cell: ");
+        printf("Enter row and column (separated by a space) or 'F' to flag/unflag a cell: ");
 
         // if two inputs keeps going
         if (scanf("%d %d", &row, &col) == 2) {
-            // if there is a bomb and the cell isn't marked you lose
-            if (board[row][col].has_mine && !board[row][col].marked) {
+            // if there is a bomb and the cell isn't flagged you lose
+            if (board[row][col].has_mine && !board[row][col].flagged) {
                 game_over = true;
             }
 
-            // else if it's marked or already revealed tell the next loop to run the tooltip and go to next loop
-            else if (board[row][col].marked){
-                markedTooltip = true;
+            // else if it's flagged or already revealed tell the next loop to run the tooltip and go to next loop
+            else if (board[row][col].flagged){
+                flaggedTooltip = true;
             } else if (board[row][col].revealed){
                 revealedTooltip = true;
             }
@@ -205,14 +214,14 @@ int main() {
             }
         } 
 
-        // else if only one input and the input is M enter marking mode
-        else if (scanf(" %c", &action) == 1 && action == 'M') {
-            printf("Enter row and column (separated by a space) to mark/unmark: ");
+        // else if only one input and the input is F enter flaging mode
+        else if (scanf(" %c", &action) == 1 && action == 'F') {
+            printf("Enter row and column (separated by a space) to flag/unflag: ");
             scanf("%d %d", &row, &col);
             if (board[row][col].revealed){
                 revealedTooltip = true;
             } else{
-                mark_cell(row, col,&mines_found);
+                flag_cell(row, col,&mines_found);
             }
         }
     }
