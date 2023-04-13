@@ -19,6 +19,7 @@ typedef struct {
 Cell board[MAX_ROWS][MAX_COLS];
 bool game_over = false;
 int rows, cols, num_mines;
+bool useColors = true;
 
 // initialize every cells
 void initialize_board() {
@@ -83,22 +84,28 @@ void print_board() {
                 printf("F  "); // flag it with F if flagged
                 resetColor();
             } else if (board[i][j].revealed) {
-                if(board[i][j].adjacent_mines == 0){
+                // use colors
+                if(useColors){
+                    if(board[i][j].adjacent_mines == 0){
                     green(); //sets color to green
                     printf("%d  ", board[i][j].adjacent_mines);
                     resetColor();
-                } else if(board[i][j].adjacent_mines == 1){
-                    cyan(); //sets color to cyan
-                    printf("%d  ", board[i][j].adjacent_mines);
-                    resetColor();
-                } else if(board[i][j].adjacent_mines == 2){
-                    yellow(); //sets color to yellow
-                    printf("%d  ", board[i][j].adjacent_mines);
-                    resetColor();
+                    } else if(board[i][j].adjacent_mines == 1){
+                        cyan(); //sets color to cyan
+                        printf("%d  ", board[i][j].adjacent_mines);
+                        resetColor();
+                    } else if(board[i][j].adjacent_mines == 2){
+                        yellow(); //sets color to yellow
+                        printf("%d  ", board[i][j].adjacent_mines);
+                        resetColor();
+                    } else{
+                        red(); //sets color to red
+                        printf("%d  ", board[i][j].adjacent_mines);
+                        resetColor();
+                    }
+                // or not
                 } else{
-                    red(); //sets color to red
                     printf("%d  ", board[i][j].adjacent_mines);
-                    resetColor();
                 }
             } else {
                 printf("%c  ", board[i][j].symbol); // otherwise print the symbol for no revealed
@@ -200,6 +207,20 @@ int main() {
     bool revealedTooltip = false;
     bool input_error = false;
     bool mine_placed = false;
+
+    char colorChoice;
+
+    // aske to use color or not
+    do{
+        printf("Do you want to use colors (don't if you see weird numbers everywhere instead of colored numbers) Yes [Y] or No [N] ?");
+        scanf(" %c", &colorChoice);
+    }while(colorChoice != 'Y' && colorChoice != 'N' && colorChoice != 'y' && colorChoice != 'n');
+
+    if(colorChoice == 'Y' || colorChoice == 'y'){
+        useColors = true;
+    }else if(colorChoice == 'N' || colorChoice == 'n'){
+        useColors = false;
+    }
 
     // reset random
     srand(time(NULL));
