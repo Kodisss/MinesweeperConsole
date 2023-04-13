@@ -164,14 +164,14 @@ int main() {
 
     // ask for the board size
     do{
-        if(rows * cols < 8) printf("Board too small ! \n");
+        if(rows < 4 || cols < 4) printf("I said : minimum 4 \n");
         if(rows > MAX_ROWS) printf("Too many rows \n");
         if(cols > MAX_COLS) printf("Too many columns \n");
-        printf("Enter number of rows (maximum %d): ", MAX_ROWS);
+        printf("Enter number of rows (maximum %d, minimum 4): ", MAX_ROWS);
         scanf("%d", &rows);
-        printf("Enter number of columns (maximum %d): ", MAX_COLS);
+        printf("Enter number of columns (maximum %d, minimum 4): ", MAX_COLS);
         scanf("%d", &cols);
-    }while(rows * cols < 8 || rows > MAX_ROWS || cols > MAX_COLS);
+    }while(rows < 4 || cols < 4 || rows > MAX_ROWS || cols > MAX_COLS);
     
 
     // initialization
