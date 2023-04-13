@@ -98,7 +98,7 @@ void place_mines() {
     }
 }
 
-void reveal_cell(int row, int col) {
+void reveal_cell(int row, int col, int* cellsRemaining) {
     // check for validity
     if (!is_valid_cell(row, col) || board[row][col].revealed) {
         return;
@@ -106,6 +106,8 @@ void reveal_cell(int row, int col) {
 
     // reveale the cell
     board[row][col].revealed = true;
+    (*cellsRemaining)--;
+
 
     //check for game over
     if (board[row][col].has_mine) {
@@ -117,7 +119,7 @@ void reveal_cell(int row, int col) {
     if (board[row][col].adjacent_mines == 0) {
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++) {
-                reveal_cell(row + i, col + j); // recursive makes for the flood filling algorythm
+                reveal_cell(row + i, col + j, cellsRemaining); // recursive makes for the flood filling algorythm
             }
         }
     }
@@ -128,7 +130,8 @@ void mark_cell(int row, int col) {
     if (!is_valid_cell(row, col)) {
         return;
     }
-    // mark the cell
+
+    // mark or unmark the cell
     board[row][col].marked = !board[row][col].marked;
 }
 
@@ -187,8 +190,7 @@ int main() {
             }
             // else just reveal the cell and count down
             else {
-                reveal_cell(row, col);
-                remaining_cells--;
+                reveal_cell(row, col, &remaining_cells);
             }
         } 
 
