@@ -33,6 +33,30 @@ void initialize_board() {
     }
 }
 
+void red(){
+    printf("\033[0;31m");
+}
+
+void green(){
+    printf("\033[0;32m");
+}
+
+void cyan(){
+    printf("\033[0;36m");
+}
+
+void yellow(){
+    printf("\033[0;33m");
+}
+
+void purple(){
+    printf("\033[0;35m");
+}
+
+void resetColor(){
+    printf("\033[0m");
+}
+
 // display the board if under 10 adds a space for format
 void print_board() {
     // print collumn numbers
@@ -55,26 +79,26 @@ void print_board() {
         // complete the board
         for (int j = 0; j < cols; j++) {
             if (board[i][j].flagged) {
-                printf("\033[0;35m"); //sets color to purple
+                purple(); //sets color to purple
                 printf("F  "); // flag it with F if flagged
-                printf("\033[0m"); //reset color
+                resetColor();
             } else if (board[i][j].revealed) {
                 if(board[i][j].adjacent_mines == 0){
-                    printf("\033[0;32m"); //sets color to green
+                    green(); //sets color to green
                     printf("%d  ", board[i][j].adjacent_mines);
-                    printf("\033[0m"); //reset color
+                    resetColor();
                 } else if(board[i][j].adjacent_mines == 1){
-                    printf("\033[0;36m"); //sets color to cyan
+                    cyan(); //sets color to cyan
                     printf("%d  ", board[i][j].adjacent_mines);
-                    printf("\033[0m"); //reset color
+                    resetColor();
                 } else if(board[i][j].adjacent_mines == 2){
-                    printf("\033[0;33m"); //sets color to yellow
+                    yellow(); //sets color to yellow
                     printf("%d  ", board[i][j].adjacent_mines);
-                    printf("\033[0m"); //reset color
+                    resetColor();
                 } else{
-                    printf("\033[0;31m"); //sets color to red
+                    red(); //sets color to red
                     printf("%d  ", board[i][j].adjacent_mines);
-                    printf("\033[0m"); //reset color
+                    resetColor();
                 }
             } else {
                 printf("%c  ", board[i][j].symbol); // otherwise print the symbol for no revealed
