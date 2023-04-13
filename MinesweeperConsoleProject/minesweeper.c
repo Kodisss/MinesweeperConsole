@@ -205,7 +205,7 @@ int main() {
         // if two inputs keeps going
         if (scanf("%d %d", &row, &col) == 2) {
             // if out of the board leave the loop
-            if(row < 0 || col < 0 || row > 19 || col >19){
+            if(row < 0 || col < 0 || row > rows || col > cols){
                 input_error = true;
             }
             // if there is a bomb and the cell isn't flagged you lose
