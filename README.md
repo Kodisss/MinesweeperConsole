@@ -7,3 +7,5 @@ You can use colors only with linux and win11
  make
  minesweeper.exe
  ```
+
+Or alternatively you can launch the .exe file
