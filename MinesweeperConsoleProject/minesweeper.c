@@ -72,8 +72,9 @@ bool is_valid_cell(int row, int col) {
 }
 
 // setup the mines dependant on probability
-void place_mines() {
+void place_mines(int inputRow, int inputCol) {
     int num_cells = rows * cols;
+    bool testAroundFirstTry;
     num_mines = num_cells * MINE_PROBABILITY;
 
     if(num_mines == 0) num_mines = 1;
@@ -85,7 +86,8 @@ void place_mines() {
         do {
             row = rand() % rows;
             col = rand() % cols;
-        } while (board[row][col].has_mine);
+            testAroundFirstTry = col == inputCol || col == inputCol - 1 || col == inputCol + 1 || row == inputRow || row == inputRow - 1 || row == inputRow + 1;
+        } while (board[row][col].has_mine || testAroundFirstTry);
 
         // place the mine
         board[row][col].has_mine = true;
@@ -153,6 +155,7 @@ int main() {
     bool flaggedTooltip = false;
     bool revealedTooltip = false;
     bool input_error = false;
+    bool mine_placed = false;
 
     // reset random
     srand(time(NULL));
@@ -173,13 +176,12 @@ int main() {
 
     // initialization
     initialize_board();
-    place_mines();
 
     int mines_found = 0;
     int remaining_cells = rows * cols - num_mines;
 
     // game loop
-    while (!game_over && remaining_cells > 0 && mines_found != num_mines) {
+    do{
         print_board();
 
         int row, col;
@@ -220,6 +222,10 @@ int main() {
             }
             // else just reveal the cell and count down
             else {
+                if (!mine_placed){
+                    place_mines(row-1, col-1);
+                    mine_placed = true;
+                }
                 reveal_cell(row-1, col-1, &remaining_cells);
             }
         } 
@@ -237,6 +243,10 @@ int main() {
                 revealedTooltip = true;
             } 
             else{
+                if (!mine_placed){
+                    place_mines(row-1, col-1);
+                    mine_placed = true;
+                }
                 flag_cell(row-1, col-1,&mines_found);
             }
         }
@@ -244,7 +254,7 @@ int main() {
         else{
             input_error = true;
         }
-    }
+    }while (!game_over && remaining_cells > 0 && mines_found != num_mines);
 
     print_board();
 
