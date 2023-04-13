@@ -160,7 +160,7 @@ int main() {
     // reset random
     srand(time(NULL));
 
-    rows = 3; cols = 3; // default board size
+    rows = 4; cols = 4; // default board size
 
     // ask for the board size
     do{
@@ -207,7 +207,7 @@ int main() {
         // if two inputs keeps going
         if (scanf("%d %d", &row, &col) == 2) {
             // if out of the board leave the loop
-            if(row < 0 || col < 0 || row > rows || col > cols){
+            if(row < 1 || col < 1 || row > rows || col > cols){
                 input_error = true;
             }
             // if there is a bomb and the cell isn't flagged you lose
@@ -235,7 +235,7 @@ int main() {
             printf("Enter row and column (separated by a space) to flag/unflag: ");
             scanf("%d %d", &row, &col);
             // if out of the board leave the loop
-            if(row < 0 || col < 0 || row > 19 || col >19){
+            if(row < 1 || col < 1 || row > 19 || col >19){
                 input_error = true;
             }
             // if already reveal say it and get out
@@ -254,7 +254,7 @@ int main() {
         else{
             input_error = true;
         }
-    }while (!game_over && remaining_cells > 0 && mines_found != num_mines);
+    }while ((!game_over && remaining_cells > 0 && mines_found != num_mines) || !mine_placed);
 
     print_board();
 
