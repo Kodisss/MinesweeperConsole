@@ -128,7 +128,9 @@ void place_mines(int inputRow, int inputCol) {
         do {
             row = rand() % rows;
             col = rand() % cols;
-            testAroundFirstTry = col == inputCol || col == inputCol - 1 || col == inputCol + 1 || row == inputRow || row == inputRow - 1 || row == inputRow + 1;
+            testAroundFirstTry = (col == inputCol - 1 && row == inputRow - 1) || (col == inputCol && row == inputRow - 1) || (col == inputCol + 1 && row == inputRow - 1)
+                                || (col == inputCol - 1 && row == inputRow) || (col == inputCol && row == inputRow) || (col == inputCol + 1 && row == inputRow)
+                                || (col == inputCol - 1 && row == inputRow + 1) || (col == inputCol && row == inputRow + 1) || (col == inputCol + 1 && row == inputRow + 1);
         } while (board[row][col].has_mine || testAroundFirstTry);
 
         // place the mine
