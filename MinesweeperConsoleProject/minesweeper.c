@@ -17,6 +17,18 @@ int is_mine(int row, int col) {
     return board[row][col] == -1;
 }
 
+void initialize_board(char board[][MAX_COLS], int rows, int cols) {
+    int i, j;
+    
+    // initialize all cells to 'X'
+    for (i = 0; i < rows; i++) {
+        for (j = 0; j < cols; j++) {
+            board[i][j] = 'X';
+        }
+    }
+}
+
+
 void print_board() {
     printf("Mines remaining: %d\n", num_mines_remaining);
     printf("   ");
