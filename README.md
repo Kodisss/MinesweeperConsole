@@ -1,7 +1,8 @@
-# Minesweeper that runs in console in C
-To run the code open a CMD prompt in the folder and run these lines
+# Console Minesweeper in C
 
 You can use colors only with linux and win11
+
+To run the code open a CMD prompt in the folder and run these lines
  
  ```bash
  make
