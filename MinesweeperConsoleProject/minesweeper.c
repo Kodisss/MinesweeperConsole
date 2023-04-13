@@ -55,9 +55,27 @@ void print_board() {
         // complete the board
         for (int j = 0; j < cols; j++) {
             if (board[i][j].flagged) {
+                printf("\033[0;35m"); //sets color to purple
                 printf("F  "); // flag it with F if flagged
+                printf("\033[0m"); //reset color
             } else if (board[i][j].revealed) {
-                printf("%d  ", board[i][j].adjacent_mines); // if revealed display number
+                if(board[i][j].adjacent_mines == 0){
+                    printf("\033[0;32m"); //sets color to green
+                    printf("%d  ", board[i][j].adjacent_mines);
+                    printf("\033[0m"); //reset color
+                } else if(board[i][j].adjacent_mines == 1){
+                    printf("\033[0;36m"); //sets color to cyan
+                    printf("%d  ", board[i][j].adjacent_mines);
+                    printf("\033[0m"); //reset color
+                } else if(board[i][j].adjacent_mines == 2){
+                    printf("\033[0;33m"); //sets color to yellow
+                    printf("%d  ", board[i][j].adjacent_mines);
+                    printf("\033[0m"); //reset color
+                } else{
+                    printf("\033[0;31m"); //sets color to red
+                    printf("%d  ", board[i][j].adjacent_mines);
+                    printf("\033[0m"); //reset color
+                }
             } else {
                 printf("%c  ", board[i][j].symbol); // otherwise print the symbol for no revealed
             }
