@@ -161,11 +161,13 @@ int main() {
     // ask for the board size
     do{
         if(rows * cols < 8) printf("Board too small ! \n");
+        if(rows > MAX_ROWS) printf("Too many rows \n");
+        if(cols > MAX_COLS) printf("Too many columns \n");
         printf("Enter number of rows (maximum %d): ", MAX_ROWS);
         scanf("%d", &rows);
         printf("Enter number of columns (maximum %d): ", MAX_COLS);
         scanf("%d", &cols);
-    }while(rows * cols < 8);
+    }while(rows * cols < 8 || rows > MAX_ROWS || cols > MAX_COLS);
     
 
     // initialization
@@ -215,7 +217,7 @@ int main() {
         } 
 
         // else if only one input and the input is F enter flaging mode
-        else if (scanf(" %c", &action) == 1 && action == 'F') {
+        else if (scanf(" %c", &action) == 1 && (action == 'F' || action == 'f')) {
             printf("Enter row and column (separated by a space) to flag/unflag: ");
             scanf("%d %d", &row, &col);
             if (board[row][col].revealed){
