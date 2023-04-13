@@ -33,7 +33,7 @@ void initialize_board() {
     }
 }
 
-// display the board
+// display the board if under 10 adds a space for format
 void print_board() {
     printf("\n     ");
     for (int i = 0; i < cols; i++) {
@@ -125,10 +125,20 @@ void reveal_cell(int row, int col, int* cellsRemaining) {
     }
 }
 
-void mark_cell(int row, int col) {
+void mark_cell(int row, int col, int* mine_count) {
     // check for validity
     if (!is_valid_cell(row, col)) {
         return;
+    }
+
+    // if not marked and there is a mine, you found a mine
+    if (board[row][col].has_mine && !board[row][col].marked){
+        (*mine_count)++;
+    }
+
+    // if already marked and there is a mine, you lost a mine
+    if (board[row][col].has_mine && board[row][col].marked){
+        (*mine_count)--;
     }
 
     // mark or unmark the cell
@@ -153,10 +163,11 @@ int main() {
     initialize_board();
     place_mines();
 
+    int mines_found = 0;
     int remaining_cells = rows * cols - num_mines;
 
     // game loop
-    while (!game_over && remaining_cells > 0) {
+    while (!game_over && remaining_cells > 0 && mines_found != num_mines) {
         print_board();
 
         int row, col;
@@ -198,7 +209,11 @@ int main() {
         else if (scanf(" %c", &action) == 1 && action == 'M') {
             printf("Enter row and column (separated by a space) to mark/unmark: ");
             scanf("%d %d", &row, &col);
-            mark_cell(row, col);
+            if (board[row][col].revealed){
+                revealedTooltip = true;
+            } else{
+                mark_cell(row, col,&mines_found);
+            }
         }
     }
 
