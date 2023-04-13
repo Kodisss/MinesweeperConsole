@@ -277,7 +277,7 @@ int main() {
             printf("Enter row and column (separated by a space) to flag/unflag: ");
             scanf("%d %d", &row, &col);
             // if out of the board leave the loop
-            if(row < 1 || col < 1 || row > 19 || col >19){
+            if(row < 1 || col < 1 || row > rows || col > cols){
                 input_error = true;
             }
             // if already reveal say it and get out
