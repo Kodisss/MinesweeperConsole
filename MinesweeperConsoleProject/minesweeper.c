@@ -38,19 +38,19 @@ void print_board() {
     // print collumn numbers
     printf("\n     ");
     for (int i = 0; i < cols; i++) {
-        if (i < 10) {
-            printf("%d  ", i);
+        if (i < 9) {
+            printf("%d  ", i+1);
         } else {
-            printf("%d ", i);
+            printf("%d ", i+1);
         }
     }
     // print row numbers
     printf("\n\n");
     for (int i = 0; i < rows; i++) {
-        if (i < 10) {
-            printf("%d    ", i);
+        if (i < 9) {
+            printf("%d    ", i+1);
         } else {
-            printf("%d   ", i);
+            printf("%d   ", i+1);
         }
         // complete the board
         for (int j = 0; j < cols; j++) {
@@ -152,6 +152,7 @@ int main() {
     // variables used for the tooltip about wether a cell is already flagged or revealed
     bool flaggedTooltip = false;
     bool revealedTooltip = false;
+    bool input_error = false;
 
     // reset random
     srand(time(NULL));
@@ -193,26 +194,33 @@ int main() {
             printf("This cell is already revealed, select another cell. \n");
             revealedTooltip = false;
         }
+        if (input_error){
+            printf("Input error, try again. \n");
+            input_error = false;
+        }
 
         // prompt to manage player inputs
         printf("Enter row and column (separated by a space) or 'F' to flag/unflag a cell: ");
 
         // if two inputs keeps going
         if (scanf("%d %d", &row, &col) == 2) {
+            // if out of the board leave the loop
+            if(row < 0 || col < 0 || row > 19 || col >19){
+                input_error = true;
+            }
             // if there is a bomb and the cell isn't flagged you lose
-            if (board[row][col].has_mine && !board[row][col].flagged) {
+            else if (board[row-1][col-1].has_mine && !board[row][col].flagged) {
                 game_over = true;
             }
-
             // else if it's flagged or already revealed tell the next loop to run the tooltip and go to next loop
-            else if (board[row][col].flagged){
+            else if (board[row-1][col-1].flagged){
                 flaggedTooltip = true;
-            } else if (board[row][col].revealed){
+            } else if (board[row-1][col-1].revealed){
                 revealedTooltip = true;
             }
             // else just reveal the cell and count down
             else {
-                reveal_cell(row, col, &remaining_cells);
+                reveal_cell(row-1, col-1, &remaining_cells);
             }
         } 
 
@@ -220,11 +228,21 @@ int main() {
         else if (scanf(" %c", &action) == 1 && (action == 'F' || action == 'f')) {
             printf("Enter row and column (separated by a space) to flag/unflag: ");
             scanf("%d %d", &row, &col);
-            if (board[row][col].revealed){
-                revealedTooltip = true;
-            } else{
-                flag_cell(row, col,&mines_found);
+            // if out of the board leave the loop
+            if(row < 0 || col < 0 || row > 19 || col >19){
+                input_error = true;
             }
+            // if already reveal say it and get out
+            else if (board[row-1][col-1].revealed){
+                revealedTooltip = true;
+            } 
+            else{
+                flag_cell(row-1, col-1,&mines_found);
+            }
+        }
+
+        else{
+            input_error = true;
         }
     }
 
