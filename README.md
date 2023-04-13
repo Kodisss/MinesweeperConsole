@@ -7,5 +7,14 @@ You can use colors only with linux and win11
  make
  minesweeper.exe
  ```
+ 
+ or if you don't want to use the makefile you can compile with GCC
+ 
+ ```bash
+ gcc -o minesweeper minesweeper.c
+ gcc -o minesweeper.exe minesweeper.c
+ minesweeper.exe
+ ```
+
 
 Or alternatively you can launch the .exe file
