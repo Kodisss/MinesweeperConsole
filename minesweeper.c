@@ -80,9 +80,14 @@ void print_board() {
         // complete the board
         for (int j = 0; j < cols; j++) {
             if (board[i][j].flagged) {
-                purple(); //sets color to purple
-                printf("F  "); // flag it with F if flagged
-                resetColor();
+                if(useColors){
+                    purple(); //sets color to purple
+                    printf("F  "); // flag it with F if flagged
+                    resetColor();
+                }
+                else{
+                    printf("F  "); // flag it with F if flagged
+                }
             } else if (board[i][j].revealed) {
                 // use colors
                 if(useColors){
