@@ -164,34 +164,47 @@ bool is_valid_cell(int rowInput, int colInputs, int maxRows, int maxCols) {
 void place_mines(Cell **board, int maxRows, int maxCols, int inputRow, int inputCol, int *num_mines) {
     int num_cells = maxRows * maxCols;
     bool testAroundFirstTry; // bool to test if the mine tries to place itself around the first guess
+    int antibug;
+    int upTo = 400;
+    int substractMineCount = 0;
     *num_mines = num_cells * MINE_PROBABILITY;
 
     if(*num_mines == 0) *num_mines = 1;
 
     for (int i = 0; i < *num_mines; i++) {
         int row, col;
+        antibug = 0;
 
         // try to place a mine until you manage to pick a spot where there is no mine and isn't around the first guess
         do {
+            antibug++;
             row = rand() % maxRows;
             col = rand() % maxCols;
             testAroundFirstTry = (col == inputCol - 1 && row == inputRow - 1) || (col == inputCol && row == inputRow - 1) || (col == inputCol + 1 && row == inputRow - 1)
                                 || (col == inputCol - 1 && row == inputRow) || (col == inputCol && row == inputRow) || (col == inputCol + 1 && row == inputRow)
                                 || (col == inputCol - 1 && row == inputRow + 1) || (col == inputCol && row == inputRow + 1) || (col == inputCol + 1 && row == inputRow + 1);
-        } while (board[row][col].has_mine || testAroundFirstTry);
+            //printf("%d \n", antibug);
+        } while ((board[row][col].has_mine || testAroundFirstTry) && antibug < upTo);
 
-        // place the mine
-        board[row][col].has_mine = true;
+        if(antibug < upTo){
+            // place the mine
+            board[row][col].has_mine = true;
 
-        // tell the adjacent cell there is a mine here
-        for (int j = row - 1; j <= row + 1; j++) {
-            for (int k = col - 1; k <= col + 1; k++) {
-                if (is_valid_cell(j, k, maxRows, maxCols)) {
-                    board[j][k].adjacent_mines++;
+            // tell the adjacent cell there is a mine here
+            for (int j = row - 1; j <= row + 1; j++) {
+                for (int k = col - 1; k <= col + 1; k++) {
+                    if (is_valid_cell(j, k, maxRows, maxCols)) {
+                        board[j][k].adjacent_mines++;
+                    }
                 }
             }
+        }else{
+            substractMineCount++; //keeps track of the number of mines skipped
         }
     }
+    //printf("%d ",*num_mines);
+    *num_mines -= substractMineCount; // substracts the number of mines skipped
+    //printf("%d \n",*num_mines);
 }
 
 void reveal_cell(Cell **board, int maxRows, int maxCols, int row, int col, int* cellsRemaining, bool* gameOver) {
