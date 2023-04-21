@@ -251,7 +251,7 @@ void flag_cell(Cell **board, int maxRows, int maxCols, int row, int col, int* mi
     board[row][col].flagged = !board[row][col].flagged;
 }
 
-void toolTipsGestion(bool *flagged, bool *revealed, bool *error){
+void toolTipsGestion(bool *flagged, bool *revealed){
     // tooltips gestion
         if (*flagged){
             printf("This cell is already flagged, you can unflag it by selecting F. \n");
@@ -260,10 +260,6 @@ void toolTipsGestion(bool *flagged, bool *revealed, bool *error){
         if (*revealed){
             printf("This cell is already revealed, select another cell. \n");
             *revealed = false;
-        }
-        if (*error){
-            printf("Input error, try again. \n");
-            *error = false;
         }
 }
 
@@ -312,7 +308,6 @@ int main() {
     // variables used for the tooltip about wether a cell is already flagged or revealed
     bool flaggedTooltip = false;
     bool revealedTooltip = false;
-    bool input_error = false;
     bool mine_placed = false;
 
     // game win or lose variables
@@ -350,13 +345,14 @@ int main() {
     do{
         print_board(board, rows, cols, useColors);
 
-        toolTipsGestion(&flaggedTooltip, &revealedTooltip, &input_error);
+        toolTipsGestion(&flaggedTooltip, &revealedTooltip);
 
         // gather player inputs
         userInputs = GetInputNumber("Enter row and column (separated by a space) or 'F' to flag/unflag a cell: ", 1, rows, cols, &flaggedInput);
         row = userInputs[0];
         col = userInputs[1];
 
+        // when the input is not on a flagged tile you run the "normal loop" if it is, run the "flagged loop"
         if(!flaggedInput){
             // if there is a bomb and the cell isn't flagged you lose
             if (board[row-1][col-1].has_mine && !board[row-1][col-1].flagged) {
@@ -393,6 +389,7 @@ int main() {
 
     print_board(board, rows, cols, useColors);
 
+    // when out of the loop, chack for game over or not and display the appropriate message
     if (game_over) {
         printf("Game over! You hit a mine.\n");
     } else {
