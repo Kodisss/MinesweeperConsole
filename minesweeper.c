@@ -82,11 +82,38 @@ void colorChoice(bool *inputColors){
     }
 }
 
+void colorPrinting(Cell **board, int i, int j){
+    if(board[i][j].flagged){
+        purple(); //sets color to purple
+        printf("F  "); // flag it with F if flagged
+        resetColor();
+        return;
+    }
+    if(board[i][j].adjacent_mines == 0){
+        green(); //sets color to green
+        printf("%d  ", board[i][j].adjacent_mines);
+        resetColor();
+    } else if(board[i][j].adjacent_mines == 1){
+        cyan(); //sets color to cyan
+        printf("%d  ", board[i][j].adjacent_mines);
+        resetColor();
+    } else if(board[i][j].adjacent_mines == 2){
+        yellow(); //sets color to yellow
+        printf("%d  ", board[i][j].adjacent_mines);
+        resetColor();
+    } else{
+        red(); //sets color to red
+        printf("%d  ", board[i][j].adjacent_mines);
+        resetColor();
+    }
+}
+
 // display the board if under 10 adds a space for format
 void print_board(Cell **board, int rows, int cols, bool useColors) {
-    // print collumn numbers
     system("CLS");
     printf("\n     ");
+
+    // print collumn numbers
     for (int i = 0; i < cols; i++) {
         if (i < 9) {
             printf("%d  ", i+1);
@@ -94,6 +121,7 @@ void print_board(Cell **board, int rows, int cols, bool useColors) {
             printf("%d ", i+1);
         }
     }
+
     // print row numbers
     printf("\n\n");
     for (int i = 0; i < rows; i++) {
@@ -106,9 +134,7 @@ void print_board(Cell **board, int rows, int cols, bool useColors) {
         for (int j = 0; j < cols; j++) {
             if (board[i][j].flagged) {
                 if(useColors){
-                    purple(); //sets color to purple
-                    printf("F  "); // flag it with F if flagged
-                    resetColor();
+                    colorPrinting(board, i, j);
                 }
                 else{
                     printf("F  "); // flag it with F if flagged
@@ -116,23 +142,7 @@ void print_board(Cell **board, int rows, int cols, bool useColors) {
             } else if (board[i][j].revealed) {
                 // use colors
                 if(useColors){
-                    if(board[i][j].adjacent_mines == 0){
-                    green(); //sets color to green
-                    printf("%d  ", board[i][j].adjacent_mines);
-                    resetColor();
-                    } else if(board[i][j].adjacent_mines == 1){
-                        cyan(); //sets color to cyan
-                        printf("%d  ", board[i][j].adjacent_mines);
-                        resetColor();
-                    } else if(board[i][j].adjacent_mines == 2){
-                        yellow(); //sets color to yellow
-                        printf("%d  ", board[i][j].adjacent_mines);
-                        resetColor();
-                    } else{
-                        red(); //sets color to red
-                        printf("%d  ", board[i][j].adjacent_mines);
-                        resetColor();
-                    }
+                    colorPrinting(board, i, j);
                 // or not
                 } else{
                     printf("%d  ", board[i][j].adjacent_mines);
