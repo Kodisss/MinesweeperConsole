@@ -319,7 +319,7 @@ int main() {
     int row, col;
     int* userInputs;
     bool flaggedInput;
-    int checkAroundRevealed;
+    int checkForFlags, checkForRevealed;
 
     // ask for colors or not
     colorChoice(&useColors);
@@ -345,7 +345,8 @@ int main() {
     do{
         print_board(board, rows, cols, useColors);
 
-        checkAroundRevealed = 0;
+        checkForFlags = 0;
+        checkForRevealed = 0;
 
         toolTipsGestion(&flaggedTooltip, &revealedTooltip);
 
@@ -366,11 +367,12 @@ int main() {
             } else if (board[row-1][col-1].revealed){
                 for(int i = -1; i <= 1; i++){
                     for(int j = -1; j <= 1; j++){
-                        if (board[row-1+i][col-1+j].flagged) checkAroundRevealed++;
+                        if (board[row-1+i][col-1+j].flagged) checkForFlags++;
+                        if (board[row-1+i][col-1+j].revealed) checkForRevealed++;
                     }
                 }
                 //printf("%d", checkAroundRevealed);
-                if(board[row-1][col-1].adjacent_mines == checkAroundRevealed){
+                if(board[row-1][col-1].adjacent_mines == checkForFlags){
                     //printf("entered first if ");
                     for(int i = -1; i <= 1; i++){
                         for(int j = -1; j <= 1; j++){
@@ -381,7 +383,20 @@ int main() {
                             }
                         }
                     }
-                } else {
+                } /*else if (8 - checkForRevealed == board[row-1][col-1].adjacent_mines)
+                {
+                    //printf("entered first if ");
+                    for(int i = -1; i <= 1; i++){
+                        for(int j = -1; j <= 1; j++){
+                            //printf("[%d;%d] ", row+i, col+j);
+                            if(!board[row-1+i][col-1+j].revealed && !board[row-1+i][col-1+j].flagged){
+                                //printf("entered second if ");
+                                flag_cell(board, rows, cols, row-1+i, col-1+j, &mines_found);
+                            }
+                        }
+                    }
+                }*/
+                else {
                     revealedTooltip = true;
                 }
             }
