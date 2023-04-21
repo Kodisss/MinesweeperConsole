@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include <time.h>
 
 #define MAX_ROWS 20
@@ -266,6 +267,41 @@ void toolTipsGestion(bool *flagged, bool *revealed, bool *error){
         }
 }
 
+int* GetInputNumber(const char* message, int min, int max1, int max2, bool* isFlagged) {
+    static int nums[2];
+    char input[256];
+    int success = 0;
+
+    printf("%s", message);
+    
+    do {
+        // check for good inputing ? 
+        if (fgets(input, 256, stdin) == NULL) {
+            printf("Error reading input\n");
+        }
+
+        // input gathering
+        if (toupper(input[0]) == 'F') {
+            *isFlagged = true;
+            success = sscanf(input + 1, "%d %d", &nums[0], &nums[1]);
+        } else {
+            *isFlagged = false;
+            success = sscanf(input, "%d %d", &nums[0], &nums[1]);
+        }
+
+        // input interpretations
+        if(success == EOF){}
+        else if (success == 1) {
+            printf("Please enter two numbers separated by a space.\n");
+        } else if (nums[0] < min || nums[0] > max1 || nums[1] < min || nums[1] > max2) {
+            printf("Please enter two numbers between %d and %d and %d and %d.\n", min, max1, min, max2);
+            success = 0;
+        }
+    } while (success != 2);
+    
+    return nums;
+}
+
 int main() {
     system("CLS");
     // game global variables
@@ -285,7 +321,8 @@ int main() {
 
     // game loop variables
     int row, col;
-    char action;
+    int* userInputs;
+    bool flaggedInput;
 
     // ask for colors or not
     colorChoice(&useColors);
@@ -315,17 +352,14 @@ int main() {
 
         toolTipsGestion(&flaggedTooltip, &revealedTooltip, &input_error);
 
-        // prompt to manage player inputs
-        printf("Enter row and column (separated by a space) or 'F' to flag/unflag a cell: ");
+        // gather player inputs
+        userInputs = GetInputNumber("Enter row and column (separated by a space) or 'F' to flag/unflag a cell: ", 1, rows, cols, &flaggedInput);
+        row = userInputs[0];
+        col = userInputs[1];
 
-        // if two inputs keeps going
-        if (scanf("%d %d", &row, &col) == 2) {
-            // if out of the board leave the loop
-            if(row < 1 || col < 1 || row > rows || col > cols){
-                input_error = true;
-            }
+        if(!flaggedInput){
             // if there is a bomb and the cell isn't flagged you lose
-            else if (board[row-1][col-1].has_mine && !board[row-1][col-1].flagged) {
+            if (board[row-1][col-1].has_mine && !board[row-1][col-1].flagged) {
                 game_over = true;
             }
             // else if it's flagged or already revealed tell the next loop to run the tooltip and go to next loop
@@ -342,18 +376,9 @@ int main() {
                 }
                 reveal_cell(board, rows, cols, row-1, col-1, &remaining_cells, &game_over);
             }
-        } 
-
-        // else if only one input and the input is F enter flaging mode
-        else if (scanf(" %c", &action) == 1 && (action == 'F' || action == 'f')) {
-            printf("Enter row and column (separated by a space) to flag/unflag: ");
-            scanf("%d %d", &row, &col);
-            // if out of the board leave the loop
-            if(row < 1 || col < 1 || row > rows || col > cols){
-                input_error = true;
-            }
+        }else{
             // if already reveal say it and get out
-            else if (board[row-1][col-1].revealed){
+            if (board[row-1][col-1].revealed){
                 revealedTooltip = true;
             }
             else{
@@ -363,10 +388,6 @@ int main() {
                 }
                 flag_cell(board, rows, cols, row-1, col-1, &mines_found);
             }
-        }
-
-        else{
-            input_error = true;
         }
     }while ((!game_over && remaining_cells > 0 && mines_found != num_mines) || !mine_placed);
 
