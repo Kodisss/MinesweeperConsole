@@ -319,6 +319,7 @@ int main() {
     int row, col;
     int* userInputs;
     bool flaggedInput;
+    int checkAroundRevealed;
 
     // ask for colors or not
     colorChoice(&useColors);
@@ -344,6 +345,8 @@ int main() {
     do{
         print_board(board, rows, cols, useColors);
 
+        checkAroundRevealed = 0;
+
         toolTipsGestion(&flaggedTooltip, &revealedTooltip);
 
         // gather player inputs
@@ -361,7 +364,26 @@ int main() {
             else if (board[row-1][col-1].flagged){
                 flaggedTooltip = true;
             } else if (board[row-1][col-1].revealed){
-                revealedTooltip = true;
+                for(int i = -1; i <= 1; i++){
+                    for(int j = -1; j <= 1; j++){
+                        if (board[row-1+i][col-1+j].flagged) checkAroundRevealed++;
+                    }
+                }
+                //printf("%d", checkAroundRevealed);
+                if(board[row-1][col-1].adjacent_mines == checkAroundRevealed){
+                    //printf("entered first if ");
+                    for(int i = -1; i <= 1; i++){
+                        for(int j = -1; j <= 1; j++){
+                            //printf("[%d;%d] ", row+i, col+j);
+                            if(!board[row-1+i][col-1+j].revealed){
+                                //printf("entered second if ");
+                                reveal_cell(board, rows, cols, row-1+i, col-1+j, &remaining_cells, &game_over);
+                            }
+                        }
+                    }
+                } else {
+                    revealedTooltip = true;
+                }
             }
             // else just reveal the cell and count down
             else {
