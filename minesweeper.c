@@ -16,13 +16,8 @@ typedef struct {
     bool flagged;
 } Cell;
 
-Cell board[MAX_ROWS][MAX_COLS];
-bool game_over = false;
-int rows, cols, num_mines;
-bool useColors = true;
-
 // initialize every cells
-void initialize_board() {
+void initialize_board(Cell **board, int rows, int cols) {
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
             board[i][j].symbol = 'X';
@@ -32,6 +27,19 @@ void initialize_board() {
             board[i][j].flagged = false;
         }
     }
+}
+
+void boardSizing(int *rows, int *cols){
+    // ask for the board size
+    do{
+        if(*rows < 4 || *cols < 4) printf("I said : minimum 4 \n");
+        if(*rows > MAX_ROWS) printf("Too many rows \n");
+        if(*cols > MAX_COLS) printf("Too many columns \n");
+        printf("Enter number of rows (maximum %d, minimum 4): ", MAX_ROWS);
+        scanf("%d", rows);
+        printf("Enter number of columns (maximum %d, minimum 4): ", MAX_COLS);
+        scanf("%d", cols);
+    }while(*rows < 4 || *cols < 4 || *rows > MAX_ROWS || *cols > MAX_COLS);
 }
 
 void red(){
@@ -58,9 +66,26 @@ void resetColor(){
     printf("\033[0m");
 }
 
+void colorChoice(bool *inputColors){
+    char colorChoice;
+
+    // ask to use color or not
+    do{
+        printf("Do you want to use colors (don't if you see weird numbers everywhere instead of colored numbers) Yes [Y] or No [N] ?");
+        scanf(" %c", &colorChoice);
+    }while(colorChoice != 'Y' && colorChoice != 'N' && colorChoice != 'y' && colorChoice != 'n');
+
+    if(colorChoice == 'Y' || colorChoice == 'y'){
+        *inputColors = true;
+    }else if(colorChoice == 'N' || colorChoice == 'n'){
+        *inputColors = false;
+    }
+}
+
 // display the board if under 10 adds a space for format
-void print_board() {
+void print_board(Cell **board, int rows, int cols, bool useColors) {
     // print collumn numbers
+    system("CLS");
     printf("\n     ");
     for (int i = 0; i < cols; i++) {
         if (i < 9) {
@@ -121,25 +146,25 @@ void print_board() {
     printf("\n");
 }
 
-bool is_valid_cell(int row, int col) {
-    return row >= 0 && row < rows && col >= 0 && col < cols; // check for validity
+bool is_valid_cell(int rowInput, int colInputs, int maxRows, int maxCols) {
+    return rowInput >= 0 && rowInput < maxRows && colInputs >= 0 && colInputs < maxCols; // check for validity
 }
 
 // setup the mines dependant on probability and first guess
-void place_mines(int inputRow, int inputCol) {
-    int num_cells = rows * cols;
+void place_mines(Cell **board, int maxRows, int maxCols, int inputRow, int inputCol, int *num_mines) {
+    int num_cells = maxRows * maxCols;
     bool testAroundFirstTry; // bool to test if the mine tries to place itself around the first guess
-    num_mines = num_cells * MINE_PROBABILITY;
+    *num_mines = num_cells * MINE_PROBABILITY;
 
-    if(num_mines == 0) num_mines = 1;
+    if(*num_mines == 0) *num_mines = 1;
 
-    for (int i = 0; i < num_mines; i++) {
+    for (int i = 0; i < *num_mines; i++) {
         int row, col;
 
         // try to place a mine until you manage to pick a spot where there is no mine and isn't around the first guess
         do {
-            row = rand() % rows;
-            col = rand() % cols;
+            row = rand() % maxRows;
+            col = rand() % maxCols;
             testAroundFirstTry = (col == inputCol - 1 && row == inputRow - 1) || (col == inputCol && row == inputRow - 1) || (col == inputCol + 1 && row == inputRow - 1)
                                 || (col == inputCol - 1 && row == inputRow) || (col == inputCol && row == inputRow) || (col == inputCol + 1 && row == inputRow)
                                 || (col == inputCol - 1 && row == inputRow + 1) || (col == inputCol && row == inputRow + 1) || (col == inputCol + 1 && row == inputRow + 1);
@@ -151,7 +176,7 @@ void place_mines(int inputRow, int inputCol) {
         // tell the adjacent cell there is a mine here
         for (int j = row - 1; j <= row + 1; j++) {
             for (int k = col - 1; k <= col + 1; k++) {
-                if (is_valid_cell(j, k)) {
+                if (is_valid_cell(j, k, maxRows, maxCols)) {
                     board[j][k].adjacent_mines++;
                 }
             }
@@ -159,36 +184,32 @@ void place_mines(int inputRow, int inputCol) {
     }
 }
 
-void reveal_cell(int row, int col, int* cellsRemaining) {
+void reveal_cell(Cell **board, int maxRows, int maxCols, int row, int col, int* cellsRemaining, bool* gameOver) {
     // check for validity
-    if (!is_valid_cell(row, col) || board[row][col].revealed) {
+    if (!is_valid_cell(row, col, maxRows, maxCols) || board[row][col].revealed || board[row][col].flagged) {
+        return;
+    } else if (board[row][col].has_mine) {
+        *gameOver = true;
         return;
     }
 
-    // reveale the cell
+    // reveal the cell
     board[row][col].revealed = true;
     (*cellsRemaining)--;
-
-
-    //check for game over
-    if (board[row][col].has_mine) {
-        game_over = true;
-        return;
-    }
 
     // reveal adjacent if there is no mine and recursive yourself to do that until a cell with a mine is found
     if (board[row][col].adjacent_mines == 0) {
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++) {
-                reveal_cell(row + i, col + j, cellsRemaining); // recursive makes for the flood filling algorythm
+                reveal_cell(board, maxRows, maxCols, row + i, col + j, cellsRemaining, gameOver); // recursive makes for the flood filling algorythm
             }
         }
     }
 }
 
-void flag_cell(int row, int col, int* mine_count) {
+void flag_cell(Cell **board, int maxRows, int maxCols, int row, int col, int* mine_count) {
     // check for validity
-    if (!is_valid_cell(row, col)) {
+    if (!is_valid_cell(row, col, maxRows, maxCols)) {
         return;
     }
 
@@ -206,70 +227,70 @@ void flag_cell(int row, int col, int* mine_count) {
     board[row][col].flagged = !board[row][col].flagged;
 }
 
+void toolTipsGestion(bool *flagged, bool *revealed, bool *error){
+    // tooltips gestion
+        if (*flagged){
+            printf("This cell is already flagged, you can unflag it by selecting F. \n");
+            *flagged = false;
+        }
+        if (*revealed){
+            printf("This cell is already revealed, select another cell. \n");
+            *revealed = false;
+        }
+        if (*error){
+            printf("Input error, try again. \n");
+            *error = false;
+        }
+}
+
 int main() {
+    system("CLS");
+    // game global variables
+    bool game_over = false;
+    int rows, cols, num_mines;
+    bool useColors = true;
+
     // variables used for the tooltip about wether a cell is already flagged or revealed
     bool flaggedTooltip = false;
     bool revealedTooltip = false;
     bool input_error = false;
     bool mine_placed = false;
 
-    char colorChoice;
+    // game win or lose variables
+    int mines_found = 0;
+    int remaining_cells = 0;
 
-    // aske to use color or not
-    do{
-        printf("Do you want to use colors (don't if you see weird numbers everywhere instead of colored numbers) Yes [Y] or No [N] ?");
-        scanf(" %c", &colorChoice);
-    }while(colorChoice != 'Y' && colorChoice != 'N' && colorChoice != 'y' && colorChoice != 'n');
+    // game loop variables
+    int row, col;
+    char action;
 
-    if(colorChoice == 'Y' || colorChoice == 'y'){
-        useColors = true;
-    }else if(colorChoice == 'N' || colorChoice == 'n'){
-        useColors = false;
-    }
+    // ask for colors or not
+    colorChoice(&useColors);
 
     // reset random
     srand(time(NULL));
 
     rows = 4; cols = 4; // default board size
 
-    // ask for the board size
-    do{
-        if(rows < 4 || cols < 4) printf("I said : minimum 4 \n");
-        if(rows > MAX_ROWS) printf("Too many rows \n");
-        if(cols > MAX_COLS) printf("Too many columns \n");
-        printf("Enter number of rows (maximum %d, minimum 4): ", MAX_ROWS);
-        scanf("%d", &rows);
-        printf("Enter number of columns (maximum %d, minimum 4): ", MAX_COLS);
-        scanf("%d", &cols);
-    }while(rows < 4 || cols < 4 || rows > MAX_ROWS || cols > MAX_COLS);
+    // board size thingy
+    boardSizing(&rows, &cols);
+
+    // board table initilization
+    Cell **board = malloc(rows * sizeof(Cell *));
+    for (int i = 0; i < rows; i++) {
+        board[i] = malloc(cols * sizeof(Cell));
+    }
     
+    // initialization for game loop
+    initialize_board(board, rows, cols);
 
-    // initialization
-    initialize_board();
-
-    int mines_found = 0;
-    int remaining_cells = rows * cols - num_mines;
+    remaining_cells = rows * cols - num_mines;
 
     // game loop
     do{
-        print_board();
+        print_board(board, rows, cols, useColors);
 
-        int row, col;
-        char action;
-
-        // tooltips gestion
-        if (flaggedTooltip){
-            printf("This cell is already flagged, you can unflag it by selecting F. \n");
-            flaggedTooltip = false;
-        }
-        if (revealedTooltip){
-            printf("This cell is already revealed, select another cell. \n");
-            revealedTooltip = false;
-        }
-        if (input_error){
-            printf("Input error, try again. \n");
-            input_error = false;
-        }
+        toolTipsGestion(&flaggedTooltip, &revealedTooltip, &input_error);
 
         // prompt to manage player inputs
         printf("Enter row and column (separated by a space) or 'F' to flag/unflag a cell: ");
@@ -281,7 +302,7 @@ int main() {
                 input_error = true;
             }
             // if there is a bomb and the cell isn't flagged you lose
-            else if (board[row-1][col-1].has_mine && !board[row][col].flagged) {
+            else if (board[row-1][col-1].has_mine && !board[row-1][col-1].flagged) {
                 game_over = true;
             }
             // else if it's flagged or already revealed tell the next loop to run the tooltip and go to next loop
@@ -293,10 +314,10 @@ int main() {
             // else just reveal the cell and count down
             else {
                 if (!mine_placed){
-                    place_mines(row-1, col-1);
+                    place_mines(board, rows, cols, row-1, col-1, &num_mines);
                     mine_placed = true;
                 }
-                reveal_cell(row-1, col-1, &remaining_cells);
+                reveal_cell(board, rows, cols, row-1, col-1, &remaining_cells, &game_over);
             }
         } 
 
@@ -311,13 +332,13 @@ int main() {
             // if already reveal say it and get out
             else if (board[row-1][col-1].revealed){
                 revealedTooltip = true;
-            } 
+            }
             else{
                 if (!mine_placed){
-                    place_mines(row-1, col-1);
+                    place_mines(board, rows, cols, row-1, col-1, &num_mines);
                     mine_placed = true;
                 }
-                flag_cell(row-1, col-1,&mines_found);
+                flag_cell(board, rows, cols, row-1, col-1, &mines_found);
             }
         }
 
@@ -326,12 +347,19 @@ int main() {
         }
     }while ((!game_over && remaining_cells > 0 && mines_found != num_mines) || !mine_placed);
 
-    print_board();
+    print_board(board, rows, cols, useColors);
 
     if (game_over) {
         printf("Game over! You hit a mine.\n");
     } else {
         printf("Congratulations, you won!\n");
     }
+
+    // free memory from board
+    for (int i = 0; i < rows; i++) {
+        free(board[i]);
+    }
+    free(board);
+
     return 0;
 }
