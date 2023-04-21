@@ -402,5 +402,8 @@ int main() {
     }
     free(board);
 
+    // waits for users input to close
+    system("pause");
+
     return 0;
 }
