@@ -162,7 +162,7 @@ bool is_valid_cell(int rowInput, int colInputs, int maxRows, int maxCols) {
 }
 
 // setup the mines dependant on probability and first guess
-void place_mines(Cell **board, int maxRows, int maxCols, int inputRow, int inputCol, int *num_mines) {
+void place_mines(Cell **board, int maxRows, int maxCols, int inputRow, int inputCol, int *num_mines, int *cellsRemaining) {
     int num_cells = maxRows * maxCols;
     bool testAroundFirstTry; // bool to test if the mine tries to place itself around the first guess
     int antibug;
@@ -205,6 +205,7 @@ void place_mines(Cell **board, int maxRows, int maxCols, int inputRow, int input
     }
     //printf("%d ",*num_mines);
     *num_mines -= substractMineCount; // substracts the number of mines skipped
+    *cellsRemaining = maxRows * maxCols - *num_mines;
     //printf("%d \n",*num_mines);
 }
 
@@ -339,8 +340,6 @@ int main() {
     // initialization for game loop
     initialize_board(board, rows, cols);
 
-    remaining_cells = rows * cols - num_mines;
-
     // game loop
     do{
         print_board(board, rows, cols, useColors);
@@ -348,7 +347,7 @@ int main() {
         toolTipsGestion(&flaggedTooltip, &revealedTooltip);
 
         // gather player inputs
-        userInputs = GetInputNumber("Enter row and column (separated by a space) or 'F' to flag/unflag a cell: ", 1, rows, cols, &flaggedInput);
+        userInputs = GetInputNumber("Enter row and column (separated by a space) to reveal \nEnter 'F' followed by row and column (separated by a space) to flag/unflag a cell: ", 1, rows, cols, &flaggedInput);
         row = userInputs[0];
         col = userInputs[1];
 
@@ -367,7 +366,8 @@ int main() {
             // else just reveal the cell and count down
             else {
                 if (!mine_placed){
-                    place_mines(board, rows, cols, row-1, col-1, &num_mines);
+                    place_mines(board, rows, cols, row-1, col-1, &num_mines, &remaining_cells);
+
                     mine_placed = true;
                 }
                 reveal_cell(board, rows, cols, row-1, col-1, &remaining_cells, &game_over);
@@ -379,7 +379,7 @@ int main() {
             }
             else{
                 if (!mine_placed){
-                    place_mines(board, rows, cols, row-1, col-1, &num_mines);
+                    place_mines(board, rows, cols, row-1, col-1, &num_mines, &remaining_cells);
                     mine_placed = true;
                 }
                 flag_cell(board, rows, cols, row-1, col-1, &mines_found);
