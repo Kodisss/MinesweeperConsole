@@ -371,7 +371,7 @@ int main() {
                         if (board[row-1+i][col-1+j].revealed) checkForRevealed++;
                     }
                 }
-                //printf("%d", checkAroundRevealed);
+                //printf("%d", checkForRevealed);
                 if(board[row-1][col-1].adjacent_mines == checkForFlags){
                     //printf("entered first if ");
                     for(int i = -1; i <= 1; i++){
