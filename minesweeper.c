@@ -367,8 +367,11 @@ int main() {
             } else if (board[row-1][col-1].revealed){
                 for(int i = -1; i <= 1; i++){
                     for(int j = -1; j <= 1; j++){
-                        if (board[row-1+i][col-1+j].flagged) checkForFlags++;
-                        if (board[row-1+i][col-1+j].revealed) checkForRevealed++;
+                        if (is_valid_cell(row-1+i,col-1+j,rows,cols))
+                        {
+                            if (board[row-1+i][col-1+j].flagged) checkForFlags++;
+                            if (board[row-1+i][col-1+j].revealed) checkForRevealed++;
+                        }
                     }
                 }
                 //printf("%d", checkForRevealed);
@@ -376,10 +379,13 @@ int main() {
                     //printf("entered first if ");
                     for(int i = -1; i <= 1; i++){
                         for(int j = -1; j <= 1; j++){
-                            //printf("[%d;%d] ", row+i, col+j);
-                            if(!board[row-1+i][col-1+j].revealed){
-                                //printf("entered second if ");
-                                reveal_cell(board, rows, cols, row-1+i, col-1+j, &remaining_cells, &game_over);
+                            if (is_valid_cell(row-1+i,col-1+j,rows,cols))
+                            {
+                                //printf("[%d;%d] ", row+i, col+j);
+                                if(!board[row-1+i][col-1+j].revealed){
+                                    //printf("entered second if ");
+                                    reveal_cell(board, rows, cols, row-1+i, col-1+j, &remaining_cells, &game_over);
+                                }
                             }
                         }
                     }
